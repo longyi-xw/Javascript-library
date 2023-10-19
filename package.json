@@ -1,0 +1,25 @@
+{
+  "name": "javascript-library",
+  "version": "1.0.0",
+  "description": "Used to include and write some js tool libraries commonly used by individuals",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/longyi-xw/Javascript-library.git"
+  },
+  "keywords": [
+    "javascript"
+  ],
+  "author": "longyi-xw",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/longyi-xw/Javascript-library/issues"
+  },
+  "homepage": "https://github.com/longyi-xw/Javascript-library#readme",
+  "dependencies": {
+    "dayjs": "^1.11.10"
+  }
+}
