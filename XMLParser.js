@@ -30,7 +30,11 @@ export default class XMLParser extends DOMParser {
         const child = node.children[i];
         if(child.children.length === 0) {
           // 如果没有子元素，将其作为属性键和文本内容添加到对象
-          obj[child.tagName] = child.textContent;
+          try {
+            obj[child.tagName] = JSON.parse(child.textContent);
+          } catch (e) {
+            obj[child.tagName] = child.textContent;
+          }
         } else {
           // 如果有子元素，继续递归
           if(obj[child.tagName] instanceof Array) {
