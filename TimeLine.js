@@ -5,9 +5,9 @@ import dayjs from 'dayjs'
 export default class TimeLine {
   option = {
     // 时间轴显示范围 单位: 小时
-    timeRange: 24,
+    timeRange: 12,
     // 时间刻度数量
-    timescaleCount: 48,
+    timescaleCount: 60,
     // 时间刻度高度
     timeScaleLarge: 15,
     timeScaleSmall: 10,
@@ -23,13 +23,12 @@ export default class TimeLine {
   constructor(el, option) {
     this.container = typeof el instanceof Element ? el : document.getElementById(el)
     this.option = Object.assign({}, this.option, option)
+    this.totalMillisecond = 60 * 60 * 1000 * this.option.timeRange
+    this.startTimestamp = new Date(dayjs().format('YYYY-MM-DD 00:00:00')).getTime() - this.totalMillisecond / 2
+
     this.#initCanvas()
     this.#initEvents()
-    this.setTimeRange(this.option.timeRange)
-    this.startTimestamp = new Date(dayjs().format('YYYY-MM-DD 00:00:00')).getTime() - this.totalMillisecond / 2
-    this.setTimeSegments(this.option.timeSegments)
-    this.setTimescales()
-    this.setTimeMiddleLine()
+    this.render()
   }
 
   #initCanvas() {
@@ -167,6 +166,7 @@ export default class TimeLine {
   }
 
   render() {
+    this.currentTime = this.startTimestamp + this.totalMillisecond / 2
     this.setTimeRange(this.option.timeRange)
     this.setTimeSegments(this.option.timeSegments)
     this.setTimescales()
@@ -182,6 +182,7 @@ export default class TimeLine {
     if(!isNaN(range) && (range = +range)) {
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
       this.totalMillisecond = 60 * 60 * 1000 * range
+      this.startTimestamp = this.currentTime - this.totalMillisecond / 2
       this.option.timeRange = range
     }
   }
@@ -191,7 +192,7 @@ export default class TimeLine {
    */
   setTimescales() {
     this.ctx.beginPath()
-    const gridNum = this.option.timescaleCount
+    const gridNum = Math.min(this.option.timeRange * this.option.timescaleCount, this.option.timescaleCount)
     // 一格多少毫秒
     const gridMs = this.option.timeRange / gridNum * (60 * 60 * 1000)
     const gridSpace = this.canvas.width / gridNum
@@ -212,7 +213,7 @@ export default class TimeLine {
           x - 13,
           h + 15
         )
-      } else if(date.getHours() % 2 === 0 && date.getMinutes() === 0) {
+      } else if(this.checkShowTime(date)) {
         // 其余时间根据各自规则显示
         h = this.option.timeScaleSmall
         this.ctx.fillStyle = this.option.textColor
@@ -223,6 +224,23 @@ export default class TimeLine {
         )
       }
       this.#drawLine(x, this.canvas.height - h, x, this.canvas.height, 1, this.option.timeScaleLineColor)
+    }
+  }
+
+  /**
+   * 刻度时间显示格式
+   * @param date
+   * @return {boolean|boolean}
+   */
+  checkShowTime(date) {
+    const defaultMinute = 5
+    if(date.getMinutes() === 0) {
+      // 天级控制
+      return this.option.timeRange > 12 ? date.getHours() % 2 === 0 : true
+    } else if(this.option.timeRange < 12) {
+      // 12小时以内 分钟格式化
+      const r = date.getMinutes() % (Math.max(this.option.timeRange * defaultMinute, defaultMinute))
+      return r === 0 || this.option.timeRange * defaultMinute < defaultMinute
     }
   }
 
